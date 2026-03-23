@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina • Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+
+        :root {
+            --primary: 234 179 8;
+        }
+
+        .tail-container {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+
+        .logo-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .hero-bg {
+            background: linear-gradient(90deg, #18181b 0%, #27272a 100%);
+        }
+
+        .nav-link {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-link:hover {
+            color: rgb(234 179 8);
+            transform: translateY(-1px);
+        }
+
+        .event-card {
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .event-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
+
+        .status-dot {
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+
+        .ticket-bar {
+            height: 6px;
+            background: linear-gradient(90deg, rgb(234 179 8), rgb(245 158 11));
+            transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal {
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: livePulse 2s infinite;
+        }
+
+        .data-row {
+            transition: all 0.2s ease;
+        }
+
+        .data-row:hover {
+            background-color: #27272a;
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+    </style>
+</head>
+
+<body class="tail-container bg-zinc-950 text-zinc-200">
+    <div class="flex h-screen overflow-hidden">
+        <!-- SIDEBAR -->
+        <div class="w-72 bg-black border-r border-zinc-800 flex flex-col">
+            <!-- Logo -->
+            <div class="px-8 py-8 border-b border-zinc-800">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-yellow-400 flex items-center justify-center rounded-2xl shadow-inner">
+                        <i class="fa-solid fa-ticket text-zinc-950 text-3xl rotate-12"></i>
+                    </div>
+                    <div>
+                        <span class="logo-font text-4xl font-semibold tracking-tighter text-white">lumina</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-yellow-400 tracking-[2px] mt-1 font-medium pl-1">EVENTS</p>
+            </div>
+
+            <!-- Menu -->
+            <div class="px-3 py-6 flex-1 overflow-y-auto">
+                <nav class="space-y-1">
+                    <a onclick="navigateTo('dashboard')"
+                        class="flex items-center gap-x-3 px-6 py-4 hover:bg-zinc-900 rounded-3xl text-white bg-zinc-900 nav-link cursor-pointer">
+                        <i class="fa-solid fa-house w-5"></i>
+                        <span class="font-medium text-sm">Dashboard</span>
+                    </a>
+                    <a onclick="navigateTo('events')"
+                        class="flex items-center gap-x-3 px-6 py-4 hover:bg-zinc-900 rounded-3xl nav-link cursor-pointer">
+                        <i class="fa-solid fa-calendar w-5"></i>
+                        <span class="font-medium text-sm">All Events</span>
+                    </a>
+                    <a onclick="navigateTo('tickets')"
+                        class="flex items-center gap-x-3 px-6 py-4 hover:bg-zinc-900 rounded-3xl nav-link cursor-pointer">
+                        <i class="fa-solid fa-ticket-simple w-5"></i>
+                        <span class="font-medium text-sm">Tickets</span>
+                        <span id="ticket-count-badge"
+                            class="ml-auto bg-yellow-400 text-zinc-950 text-[10px] px-2.5 py-px rounded-3xl font-mono font-bold">248</span>
+                    </a>
+                    <a onclick="navigateTo('analytics')"
+                        class="flex items-center gap-x-3 px-6 py-4 hover:bg-zinc-900 rounded-3xl nav-link cursor-pointer">
+                        <i class="fa-solid fa-chart-line w-5"></i>
+                        <span class="font-medium text-sm">Analytics</span>
+                    </a>
+                    <a onclick="navigateTo('database')"
+                        class="flex items-center gap-x-3 px-6 py-4 hover:bg-zinc-900 rounded-3xl nav-link cursor-pointer">
+                        <i class="fa-solid fa-database w-5"></i>
+                        <span class="font-medium text-sm">Database</span>
+                    </a>
+                </nav>
+
+                <div class="mt-12 px-6">
+                    <div class="text-xs font-mono tracking-widest text-zinc-500 mb-4">UPCOMING</div>
+                    <div onclick="viewEventDetail(0)"
+                        class="flex gap-3 bg-zinc-900 hover:bg-zinc-800 p-3 rounded-3xl cursor-pointer">
+                        <div class="w-12 h-12 bg-violet-200 rounded-2xl overflow-hidden flex-shrink-0">
+                            <img src="https://picsum.photos/id/1015/200/200" alt="" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-white line-clamp-2">The Lumineers • Live in Berlin
+                            </div>
+                            <div class="text-xs text-zinc-400 mt-3 flex items-center">
+                                <i class="fa-solid fa-clock mr-1.5"></i>
+                                <span>Mar 15, 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto px-6 pt-8">
+                    <div class="bg-zinc-900 rounded-3xl p-5 text-xs">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-x-2">
+                                <div class="live-dot"></div>
+                                <span class="font-medium text-emerald-400">LIVE</span>
+                            </div>
+                            <span class="font-mono text-amber-400">14,872</span>
+                        </div>
+                        <div class="h-1.5 bg-zinc-800 rounded-3xl mt-4 overflow-hidden">
+                            <div class="h-1.5 w-[73%] bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-3xl"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-zinc-400 mt-2">
+                            <div>Tickets sold today</div>
+                            <div class="font-medium">73%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-6 border-t border-zinc-800">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-8 h-8 bg-zinc-700 rounded-2xl flex items-center justify-center text-xs font-bold">SJ
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium">Sam Rivera</div>
+                        <div class="text-zinc-500 text-xs">Event Director</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="flex-1 flex flex-col">
+
+            <!-- Topbar -->
+            <div class="h-16 bg-black border-b border-zinc-800 px-8 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div onclick="toggleSidebar()"
+                        class="lg:hidden w-9 h-9 flex items-center justify-center text-2xl text-zinc-400 cursor-pointer">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+
+                    <div class="hidden md:flex items-center bg-zinc-900 rounded-3xl px-5 py-2 text-sm w-80">
+                        <i class="fa-solid fa-magnifying-glass text-zinc-400"></i>
+                        <input id="search-input" onkeyup="if(event.key === 'Enter') searchEvents()" type="text"
+                            placeholder="Search events or tickets..."
+                            class="flex-1 ml-3 bg-transparent outline-none text-sm placeholder-zinc-400">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-x-8">
+                    <!-- Event status -->
+                    <div class="hidden sm:flex items-center gap-x-6 text-xs">
+                        <div class="flex items-center gap-x-2">
+                            <div class="px-4 py-2 bg-zinc-900 rounded-3xl flex items-center gap-x-2">
+                                <span class="text-emerald-400">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                                <span class="font-medium">4 live</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-x-6">
+                        <button onclick="createNewEvent()"
+                            class="flex items-center gap-x-2 bg-yellow-400 hover:bg-amber-300 transition-colors text-zinc-950 px-6 py-2 rounded-3xl text-sm font-semibold shadow-inner">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>New Event</span>
+                        </button>
+
+                        <div
+                            class="w-8 h-8 bg-zinc-800 hover:bg-zinc-700 transition-colors rounded-2xl flex items-center justify-center relative cursor-pointer">
+                            <i class="fa-solid fa-bell"></i>
+                            <div
+                                class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-[9px] flex items-center justify-center rounded-full">
+                                3</div>
+                        </div>
+
+                        <div class="flex items-center gap-x-2">
+                            <div class="text-right">
+                                <div class="text-xs font-medium">Alex Chen</div>
+                                <div class="text-[10px] text-teal-400 -mt-0.5">online</div>
+                            </div>
+                            <img src="https://picsum.photos/id/64/128/128" alt="Alex"
+                                class="w-8 h-8 rounded-2xl object-cover ring-2 ring-yellow-400">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div id="main-content" class="flex-1 overflow-auto p-8">
+
+                <!-- DASHBOARD VIEW -->
+                <div id="dashboard-view">
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <span class="px-4 py-1 bg-yellow-300 text-zinc-900 text-xs font-bold rounded-3xl">Q1
+                                2025</span>
+                            <h1 class="text-5xl font-semibold tracking-tighter text-white mt-2">Good morning, Alex</h1>
+                            <p class="text-zinc-400">Here's what's happening with your events today</p>
+                        </div>
+
+                        <div class="flex items-center gap-x-2 text-xs bg-zinc-900 px-5 h-9 rounded-3xl">
+                            <div class="px-5 border-r border-zinc-700">MAR 10</div>
+                            <div class="text-yellow-400 font-medium">TODAY</div>
+                        </div>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                        <!-- Card 1 -->
+                        <div class="bg-zinc-900 rounded-3xl p-6">
+                            <div class="flex justify-between">
+                                <div>
+                                    <div class="uppercase text-xs tracking-widest font-medium text-zinc-400">Total
+                                        Revenue</div>
+                                    <div class="text-5xl font-semibold text-white mt-2 tracking-tighter">$184k</div>
+                                    <div class="flex items-center gap-x-2 text-emerald-400 text-sm mt-6">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                        <span class="font-medium">+18.2%</span>
+                                    </div>
+                                </div>
+                                <div
+                                    class="w-12 h-12 bg-emerald-900/30 rounded-2xl flex items-center justify-center text-3xl text-emerald-400">
+                                    💰
+                                </div>
+                            </div>
+                            <div class="mt-8 h-2 bg-zinc-800 rounded-3xl overflow-hidden">
+                                <div class="h-2 w-4/5 bg-gradient-to-r from-yellow-400 to-amber-400"></div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="bg-zinc-900 rounded-3xl p-6 relative overflow-hidden">
+                            <div class="flex justify-between">
+                                <div>
+                                    <div class="uppercase text-xs tracking-widest font-medium text-zinc-400">Tickets
+                                        Sold</div>
+                                    <div id="total-tickets-sold"
+                                        class="text-5xl font-semibold text-white mt-2 tracking-tighter">3,284</div>
+                                    <div class="text-xs text-zinc-400 mt-1">of 6,500 capacity</div>
+                                </div>
+                                <div>
+                                    <svg class="w-20 h-20 -mt-3 -mr-3" viewBox="0 0 42 42">
+                                        <circle cx="21" cy="21" r="15" fill="none" stroke="#27272a" stroke-width="6">
+                                        </circle>
+                                        <circle cx="21" cy="21" r="15" fill="none" stroke="#eab308" stroke-width="6"
+                                            stroke-dasharray="94.2" stroke-dashoffset="23" stroke-linecap="round"
+                                            transform="rotate(-90 21 21)"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div onclick="viewAllTickets()"
+                                class="absolute bottom-6 right-6 text-xs flex items-center gap-x-2 bg-black px-5 py-2.5 rounded-3xl cursor-pointer hover:bg-zinc-800">
+                                <span>MANAGE</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div class="bg-zinc-900 rounded-3xl p-6">
+                            <div class="flex justify-between items-start">
+                                <div class="space-y-6">
+                                    <div>
+                                        <div class="flex items-center gap-x-3">
+                                            <div class="text-amber-300">
+                                                <i class="fa-solid fa-users"></i>
+                                            </div>
+                                            <div class="text-sm">Attendees checked in</div>
+                                        </div>
+                                        <div class="text-4xl font-semibold mt-1">1,229</div>
+                                    </div>
+                                    <div class="text-xs text-teal-400 flex items-center gap-x-2">
+                                        <div class="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                                        <span>23 just now</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4 -->
+                        <div onclick="navigateTo('database')"
+                            class="bg-zinc-900 rounded-3xl p-6 cursor-pointer border border-dashed border-yellow-400 hover:border-yellow-300 transition-all">
+                            <div class="uppercase text-xs font-bold text-yellow-400 mb-1 tracking-wider">DATABASE</div>
+                            <div class="text-3xl font-medium">Event Records</div>
+                            <div class="mt-8 flex items-center justify-between text-xs">
+                                <div class="flex -space-x-4">
+                                    <div
+                                        class="w-6 h-6 bg-zinc-700 rounded-2xl ring-2 ring-zinc-900 flex items-center justify-center text-[10px]">
+                                        🎤</div>
+                                    <div
+                                        class="w-6 h-6 bg-zinc-700 rounded-2xl ring-2 ring-zinc-900 flex items-center justify-center text-[10px]">
+                                        🎸</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-mono text-lg font-bold text-white">18</div>
+                                    <div class="text-zinc-400 text-[10px]">active records</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Events grid -->
+                    <div class="mt-12">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="font-semibold text-lg">Live &amp; Upcoming Events</div>
+                            <button onclick="navigateTo('events')"
+                                class="text-xs flex items-center gap-x-2 text-yellow-400 hover:text-amber-300">
+                                <span>ALL EVENTS</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="dashboard-events">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EVENTS VIEW -->
+                <div id="events-view" class="hidden">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-3xl font-semibold">All Events</h2>
+
+                        <div class="flex items-center bg-zinc-900 rounded-3xl text-sm">
+                            <div onclick="filterEvents(this)" data-filter="all"
+                                class="active-filter px-7 py-3 rounded-3xl cursor-pointer">All</div>
+                            <div onclick="filterEvents(this)" data-filter="live" class="px-7 py-3 cursor-pointer">Live
+                            </div>
+                            <div onclick="filterEvents(this)" data-filter="upcoming" class="px-7 py-3 cursor-pointer">
+                                Upcoming</div>
+                            <div onclick="filterEvents(this)" data-filter="past" class="px-7 py-3 cursor-pointer">Past
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="all-events-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- TICKETS VIEW -->
+                <div id="tickets-view" class="hidden">
+                    <div class="max-w-5xl mx-auto">
+                        <div class="flex justify-between items-center mb-10">
+                            <div class="flex items-center gap-x-4">
+                                <i class="fa-solid fa-ticket-simple text-4xl text-yellow-300"></i>
+                                <div>
+                                    <h2 class="text-4xl font-semibold tracking-tight">Tickets</h2>
+                                    <p class="text-zinc-400 text-sm">Real-time ticket inventory</p>
+                                </div>
+                            </div>
+
+                            <div class="text-right">
+                                <div class="text-xs uppercase font-medium text-zinc-400">Total booked</div>
+                                <div id="total-booked-tickets" class="text-7xl font-bold text-white tabular-nums">3284
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ticket summary bars -->
+                        <div class="grid grid-cols-3 gap-6 mb-12">
+                            <div class="bg-zinc-900 rounded-3xl p-6">
+                                <div class="flex justify-between text-xs mb-6">
+                                    <div class="flex items-center gap-x-2">
+                                        <span class="text-blue-400">•</span>
+                                        <span>General Admission</span>
+                                    </div>
+                                    <div class="font-mono">1,984</div>
+                                </div>
+                                <div class="ticket-bar w-[65%]"></div>
+                                <div class="flex justify-between text-[10px] text-zinc-400 mt-3">
+                                    <div>1,984 / 3,000</div>
+                                    <div>66%</div>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-3xl p-6">
+                                <div class="flex justify-between text-xs mb-6">
+                                    <div class="flex items-center gap-x-2">
+                                        <span class="text-purple-400">•</span>
+                                        <span>VIP</span>
+                                    </div>
+                                    <div class="font-mono">892</div>
+                                </div>
+                                <div class="ticket-bar w-[92%]"></div>
+                                <div class="flex justify-between text-[10px] text-zinc-400 mt-3">
+                                    <div>892 / 970</div>
+                                    <div>92%</div>
+                                </div>
+                            </div>
+                            <div class="bg-zinc-900 rounded-3xl p-6">
+                                <div class="flex justify-between text-xs mb-6">
+                                    <div class="flex items-center gap-x-2">
+                                        <span class="text-pink-400">•</span>
+                                        <span>Backstage Pass</span>
+                                    </div>
+                                    <div class="font-mono">408</div>
+                                </div>
+                                <div class="ticket-bar w-[41%]"></div>
+                                <div class="flex justify-between text-[10px] text-zinc-400 mt-3">
+                                    <div>408 / 1,000</div>
+                                    <div>41%</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-zinc-900 rounded-3xl overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-zinc-800">
+                                        <th class="text-left py-5 px-8 font-medium text-xs text-zinc-400">EVENT</th>
+                                        <th class="text-left py-5 px-8 font-medium text-xs text-zinc-400">BUYER</th>
+                                        <th class="text-left py-5 px-8 font-medium text-xs text-zinc-400">TYPE</th>
+                                        <th class="text-right py-5 px-8 font-medium text-xs text-zinc-400">PRICE</th>
+                                        <th class="text-center py-5 px-8 font-medium text-xs text-zinc-400">DATE</th>
+                                        <th class="w-8"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticket-table-body" class="text-sm divide-y divide-zinc-800">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ANALYTICS VIEW -->
+                <div id="analytics-view" class="hidden">
+                    <h2 class="text-3xl font-semibold mb-8">Analytics &amp; Insights</h2>
+
+                    <div class="grid grid-cols-12 gap-6">
+                        <div class="col-span-12 lg:col-span-7 bg-zinc-900 rounded-3xl p-7">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="font-medium">Ticket sales velocity</div>
+                                <select onchange="fakeRefreshChart()"
+                                    class="bg-transparent text-xs border border-zinc-700 rounded-3xl px-4 py-2">
+                                    <option>Last 30 days</option>
+                                    <option>Last 7 days</option>
+                                </select>
+                            </div>
+
+                            <!-- Fake chart -->
+                            <div class="h-80 flex items-end gap-x-2 px-4">
+                                <div class="flex-1 h-[30%] bg-yellow-400/30 rounded-t"></div>
+                                <div class="flex-1 h-[55%] bg-yellow-400/40 rounded-t"></div>
+                                <div class="flex-1 h-[70%] bg-yellow-400/60 rounded-t"></div>
+                                <div class="flex-1 h-[85%] bg-yellow-400 rounded-t"></div>
+                                <div class="flex-1 h-[92%] bg-amber-400 rounded-t"></div>
+                                <div class="flex-1 h-[65%] bg-yellow-400/70 rounded-t"></div>
+                                <div class="flex-1 h-[45%] bg-yellow-400/40 rounded-t"></div>
+                            </div>
+
+                            <div class="flex justify-between text-xs text-zinc-400 mt-3 px-4">
+                                <div>Feb 8</div>
+                                <div>Feb 12</div>
+                                <div>Feb 16</div>
+                                <div>Feb 20</div>
+                                <div>Feb 24</div>
+                                <div>Feb 28</div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-12 lg:col-span-5 bg-zinc-900 rounded-3xl p-7 flex flex-col">
+                            <div class="font-medium mb-8">Top performing events</div>
+
+                            <div class="flex-1 space-y-8">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-x-4">
+                                        <div class="text-2xl">🎸</div>
+                                        <div>
+                                            <div class="text-sm">Neon Nights Festival</div>
+                                            <div class="text-xs text-emerald-400">1.2k tickets</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-semibold">$87,320</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-x-4">
+                                        <div class="text-2xl">🎤</div>
+                                        <div>
+                                            <div class="text-sm">The Midnight Show</div>
+                                            <div class="text-xs text-emerald-400">842 tickets</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-lg font-semibold">$43,900</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="navigateTo('events')"
+                                class="mt-auto w-full py-4 text-center border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-zinc-950 rounded-3xl text-sm font-medium transition-all">
+                                VIEW FULL REPORT
+                            </button>
+                        </div>
+
+                        <!-- Conversion rate -->
+                        <div class="col-span-12 bg-zinc-900 rounded-3xl p-8">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="uppercase text-xs text-zinc-400">Average conversion rate</div>
+                                    <div class="flex items-baseline gap-x-3">
+                                        <div class="text-7xl font-semibold text-white">64</div>
+                                        <div class="text-4xl text-yellow-300">%</div>
+                                    </div>
+                                </div>
+                                <div class="text-xs max-w-[210px] leading-snug text-zinc-400">
+                                    64% of visitors who viewed an event page ended up purchasing a ticket this month.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATABASE VIEW -->
+                <div id="database-view" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-x-3">
+                            <i class="fa-solid fa-database text-yellow-400"></i>
+                            <h2 class="font-semibold text-3xl">Event Database</h2>
+                        </div>
+
+                        <div onclick="exportDatabase()"
+                            class="flex items-center gap-x-3 text-xs border border-zinc-700 hover:border-zinc-300 px-6 py-3 rounded-3xl cursor-pointer">
+                            <i class="fa-solid fa-download"></i>
+                            <span>EXPORT CSV</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl">
+                        <div class="max-h-[560px] overflow-auto">
+                            <table class="w-full">
+                                <thead class="bg-black sticky top-0">
+                                    <tr class="text-xs">
+                                        <th class="px-8 py-6 text-left font-normal text-zinc-400">EVENT ID</th>
+                                        <th class="px-8 py-6 text-left font-normal text-zinc-400">EVENT NAME</th>
+                                        <th class="px-8 py-6 text-left font-normal text-zinc-400">DATE</th>
+                                        <th class="px-8 py-6 text-left font-normal text-zinc-400">VENUE</th>
+                                        <th class="px-8 py-6 text-center font-normal text-zinc-400">TICKETS BOOKED</th>
+                                        <th class="px-8 py-6 text-center font-normal text-zinc-400">CAPACITY</th>
+                                        <th class="px-8 py-6 text-right font-normal text-zinc-400">REVENUE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="db-table-body" class="text-sm font-light divide-y divide-zinc-800">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-[10px] text-center text-zinc-500 mt-6 font-mono">
+                        18 rows • last synced moments ago
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div
+                class="h-14 bg-black border-t border-zinc-800 px-8 flex items-center text-xs font-mono text-zinc-500 justify-between">
+                <div>LUMINA v24.3.1 • 18 events indexed</div>
+                <div class="flex items-center gap-x-5">
+                    <div onclick="showHelp()" class="cursor-pointer hover:text-yellow-400 transition-colors">HELP</div>
+                    <div class="w-px h-3 bg-zinc-700"></div>
+                    <div class="flex items-center gap-x-1.5">
+                        <div class="w-3 h-3 bg-emerald-400 rounded-full animate-ping"></div>
+                        <span class="text-emerald-400">ALL SYSTEMS OPERATIONAL</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EVENT DETAIL MODAL -->
+    <div onclick="if(event.target.id === 'event-modal') closeModal()" id="event-modal"
+        class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div onclick="event.stopImmediatePropagation()"
+            class="modal bg-zinc-900 w-full max-w-lg mx-4 rounded-3xl overflow-hidden">
+
+            <!-- Modal header image -->
+            <div id="modal-image" class="h-56 bg-cover bg-center relative">
+                <div
+                    class="absolute top-4 right-4 bg-black/70 text-xs font-medium px-4 py-1 rounded-3xl flex items-center gap-x-2">
+                    <span id="modal-status"></span>
+                </div>
+                <div onclick="closeModal()"
+                    class="absolute top-4 left-4 w-8 h-8 bg-black/60 hover:bg-black/90 rounded-2xl flex items-center justify-center cursor-pointer">
+                    ✕
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div id="modal-title" class="text-2xl font-semibold"></div>
+                <div id="modal-date" class="text-xs text-yellow-400 mt-1 font-medium"></div>
+
+                <div class="my-8 grid grid-cols-2 gap-6 text-xs">
+                    <div>
+                        <div class="text-zinc-400">Tickets sold</div>
+                        <div id="modal-tickets-sold" class="text-4xl font-semibold text-white mt-1">872</div>
+                        <div id="modal-capacity" class="text-xs text-zinc-400">of 1200</div>
+                    </div>
+                    <div>
+                        <div class="text-zinc-400">Gross revenue</div>
+                        <div id="modal-revenue" class="text-4xl font-semibold text-white mt-1">$41,280</div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-zinc-700 my-6"></div>
+
+                <div class="flex gap-3">
+                    <button onclick="closeModal()"
+                        class="flex-1 py-6 text-sm border border-zinc-600 rounded-3xl">CLOSE</button>
+                    <button onclick="bookTicketsFromModal()"
+                        class="flex-1 py-6 text-sm bg-yellow-400 text-zinc-950 rounded-3xl font-semibold">BOOK
+                        TICKETS</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" onclick="this.classList.add('hidden')"
+        class="hidden fixed bottom-6 right-6 bg-zinc-800 border border-yellow-400 text-yellow-400 text-sm px-5 py-3 rounded-3xl shadow-2xl flex items-center gap-x-3">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toast-text"></span>
+    </div>
+
+    <script>
+        // Tailwind script run
+        function initializeTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: {
+                    extend: {}
+                }
+            }
+        }
+
+        // Sample data
+        let events = [
+            {
+                id: 0,
+                title: "The Lumineers Live",
+                date: "Mar 15, 2025",
+                venue: "Olympic Stadium, Berlin",
+                image: "https://picsum.photos/id/1015/600/400",
+                status: "upcoming",
+                ticketsSold: 872,
+                capacity: 1200,
+                price: 89,
+                revenue: 41280
+            },
+            {
+                id: 1,
+                title: "Neon Nights Festival",
+                date: "Mar 22, 2025",
+                venue: "The Meadow, Amsterdam",
+                image: "https://picsum.photos/id/201/600/400",
+                status: "live",
+                ticketsSold: 1843,
+                capacity: 2500,
+                price: 65,
+                revenue: 119795
+            },
+            {
+                id: 2,
+                title: "Jazz in the Park",
+                date: "Mar 9, 2025",
+                venue: "Central Park Amphitheater",
+                image: "https://picsum.photos/id/29/600/400",
+                status: "past",
+                ticketsSold: 312,
+                capacity: 450,
+                price: 45,
+                revenue: 14040
+            }
+        ]
+
+        let tickets = [
+            {
+                id: 1,
+                event: "Neon Nights Festival",
+                buyer: "Maria Lopez",
+                type: "VIP",
+                price: 129,
+                date: "Mar 10"
+            },
+            {
+                id: 2,
+                event: "The Lumineers Live",
+                buyer: "Thomas Berg",
+                type: "GA",
+                price: 89,
+                date: "Mar 10"
+            },
+            {
+                id: 3,
+                event: "Neon Nights Festival",
+                buyer: "Priya Sharma",
+                type: "GA",
+                price: 65,
+                date: "Mar 9"
+            },
+            {
+                id: 4,
+                event: "Jazz in the Park",
+                buyer: "Liam Dubois",
+                type: "VIP",
+                price: 120,
+                date: "Mar 8"
+            }
+        ]
+
+        let databaseRecords = [
+            {
+                id: "EV-3921",
+                name: "The Lumineers Live",
+                date: "2025-03-15",
+                venue: "Olympic Stadium",
+                booked: 872,
+                capacity: 1200,
+                revenue: 41280
+            },
+            {
+                id: "EV-3922",
+                name: "Neon Nights Festival",
+                date: "2025-03-22",
+                venue: "The Meadow",
+                booked: 1843,
+                capacity: 2500,
+                revenue: 119795
+            },
+            {
+                id: "EV-3923",
+                name: "Jazz in the Park",
+                date: "2025-03-09",
+                venue: "Central Park",
+                booked: 312,
+                capacity: 450,
+                revenue: 14040
+            },
+            {
+                id: "EV-3924",
+                name: "Techno Underground",
+                date: "2025-04-02",
+                venue: "Warehouse 17",
+                booked: 421,
+                capacity: 800,
+                revenue: 21050
+            }
+        ]
+
+        // Current view
+        let currentView = 'dashboard'
+
+        function navigateTo(view) {
+            // Hide all views
+            document.getElementById('dashboard-view').classList.add('hidden')
+            document.getElementById('events-view').classList.add('hidden')
+            document.getElementById('tickets-view').classList.add('hidden')
+            document.getElementById('analytics-view').classList.add('hidden')
+            document.getElementById('database-view').classList.add('hidden')
+
+            // Show the selected
+            if (view === 'dashboard') {
+                document.getElementById('dashboard-view').classList.remove('hidden')
+            } else if (view === 'events') {
+                document.getElementById('events-view').classList.remove('hidden')
+                renderAllEvents()
+            } else if (view === 'tickets') {
+                document.getElementById('tickets-view').classList.remove('hidden')
+                renderTicketsTable()
+            } else if (view === 'analytics') {
+                document.getElementById('analytics-view').classList.remove('hidden')
+            } else if (view === 'database') {
+                document.getElementById('database-view').classList.remove('hidden')
+                renderDatabaseTable()
+            }
+
+            currentView = view
+        }
+
+        function renderDashboardEvents() {
+            const container = document.getElementById('dashboard-events')
+            container.innerHTML = ''
+
+            events.slice(0, 3).forEach((event, index) => {
+                const div = document.createElement('div')
+                div.className = `event-card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer`
+                div.innerHTML = `
+                    <div class="relative">
+                        <img src="${event.image}" class="w-full h-44 object-cover">
+                        ${event.status === 'live' ? `
+                        <div class="absolute top-4 left-4 flex items-center gap-x-2 bg-black/70 text-xs px-3 py-1 rounded-3xl">
+                            <div class="live-dot"></div>
+                            <span class="text-emerald-300 font-medium">LIVE</span>
+                        </div>` : ''}
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="font-semibold text-base">${event.title}</div>
+                        </div>
+                        <div class="text-xs text-zinc-400 mt-1">${event.date} • ${event.venue.split(',')[0]}</div>
+                        
+                        <div class="mt-6 flex items-center justify-between text-xs">
+                            <div>
+                                <span class="font-mono text-yellow-300">${event.ticketsSold}</span>
+                                <span class="text-zinc-400">/${event.capacity}</span>
+                            </div>
+                            <div onclick="event.stopImmediatePropagation(); viewEventDetail(${event.id});" 
+                                 class="bg-black text-white text-[10px] px-5 py-2 rounded-3xl">DETAILS</div>
+                        </div>
+                        
+                        <div class="mt-4 bg-zinc-800 h-2 rounded-3xl overflow-hidden">
+                            <div class="h-2 bg-yellow-400" 
+                                 style="width: ${(event.ticketsSold / event.capacity) * 100}%"></div>
+                        </div>
+                    </div>
+                `
+                div.onclick = () => viewEventDetail(event.id)
+                container.appendChild(div)
+            })
+        }
+
+        function renderAllEvents(filter = 'all') {
+            const container = document.getElementById('all-events-grid')
+            container.innerHTML = ''
+
+            let filteredEvents = events
+
+            if (filter !== 'all') {
+                filteredEvents = events.filter(ev => ev.status === filter)
+            }
+
+            filteredEvents.forEach(event => {
+                const percent = Math.round((event.ticketsSold / event.capacity) * 100)
+
+                const cardHTML = `
+                <div onclick="viewEventDetail(${event.id});" 
+                     class="event-card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer">
+                    <img src="${event.image}" class="h-56 w-full object-cover">
+                    <div class="px-6 py-6">
+                        <div class="flex justify-between">
+                            <div class="font-medium">${event.title}</div>
+                            <div class="text-xs bg-zinc-800 text-white px-3 flex items-center rounded-3xl">${event.date}</div>
+                        </div>
+                        <div class="text-xs text-zinc-400 mt-1">${event.venue}</div>
+                        
+                        <div class="flex items-center gap-x-3 mt-8">
+                            <div class="flex-1">
+                                <div class="text-[10px] text-zinc-400 mb-2">BOOKED</div>
+                                <div class="flex items-baseline">
+                                    <span class="text-4xl font-semibold text-white">${event.ticketsSold}</span>
+                                    <span class="text-xs ml-2 text-zinc-400">/ ${event.capacity}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-medium text-emerald-400">${percent}%</div>
+                                <div class="w-14 h-14 relative">
+                                    <svg class="w-14 h-14" viewBox="0 0 42 42">
+                                        <circle cx="21" cy="21" r="15" fill="none" stroke="#3f3f46" stroke-width="5"></circle>
+                                        <circle cx="21" cy="21" r="15" fill="none" 
+                                            stroke="#facc15" stroke-width="5" stroke-dasharray="94" 
+                                            stroke-dashoffset="${94 - (94 * percent / 100)}" 
+                                            stroke-linecap="round" transform="rotate(-90 21 21)"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+
+                container.innerHTML += cardHTML
+            })
+
+            if (filteredEvents.length === 0) {
+                container.innerHTML = `<div class="col-span-3 py-12 text-center text-zinc-400">No events found in this category.</div>`
+            }
+        }
+
+        function filterEvents(el) {
+            // remove active from all
+            document.querySelectorAll('#events-view .flex.items-center > div').forEach(div => {
+                div.classList.remove('active-filter', 'bg-zinc-800', 'text-white')
+            })
+
+            el.classList.add('active-filter', 'bg-zinc-800', 'text-white')
+
+            const filterType = el.getAttribute('data-filter')
+            renderAllEvents(filterType)
+        }
+
+        function renderTicketsTable() {
+            const tbody = document.getElementById('ticket-table-body')
+            tbody.innerHTML = ''
+
+            let totalBooked = 0
+
+            tickets.forEach(ticket => {
+                totalBooked += ticket.price
+
+                const row = document.createElement('tr')
+                row.className = 'data-row'
+                row.innerHTML = `
+                    <td class="px-8 py-6">${ticket.event}</td>
+                    <td class="px-8 py-6">${ticket.buyer}</td>
+                    <td class="px-8 py-6">
+                        <span class="inline-flex items-center rounded-3xl px-4 py-1 text-xs font-medium
+                            ${ticket.type === 'VIP' ? 'bg-purple-400 text-zinc-950' : 'bg-sky-400 text-zinc-950'}">
+                            ${ticket.type}
+                        </span>
+                    </td>
+                    <td class="px-8 py-6 text-right font-medium">€${ticket.price}</td>
+                    <td class="px-8 py-6 text-center text-xs text-zinc-400">${ticket.date}</td>
+                    <td class="px-4">
+                        <i onclick="event.stopImmediatePropagation(); refundTicket(${ticket.id});" 
+                           class="fa-solid fa-trash-can text-xs cursor-pointer text-zinc-400 hover:text-red-400"></i>
+                    </td>
+                `
+                tbody.append(row)
+            })
+
+            // update total booked
+            document.getElementById('total-booked-tickets').textContent = Math.floor(Math.random() * 1200) + 2500
+        }
+
+        function renderDatabaseTable() {
+            const tbody = document.getElementById('db-table-body')
+            tbody.innerHTML = ''
+
+            databaseRecords.forEach(record => {
+                const tr = document.createElement('tr')
+                tr.className = 'data-row text-xs'
+                tr.innerHTML = `
+                    <td class="px-8 py-5 font-mono text-yellow-400">${record.id}</td>
+                    <td class="px-8 py-5">${record.name}</td>
+                    <td class="px-8 py-5 text-zinc-400">${record.date}</td>
+                    <td class="px-8 py-5 text-zinc-400">${record.venue}</td>
+                    <td class="px-8 py-5 text-center">
+                        <span class="tabular-nums">${record.booked}</span>
+                    </td>
+                    <td class="px-8 py-5 text-center text-zinc-400">${record.capacity}</td>
+                    <td class="px-8 py-5 text-right font-medium">€${record.revenue.toLocaleString('de-DE')}</td>
+                `
+                tbody.appendChild(tr)
+            })
+        }
+
+        function viewEventDetail(id) {
+            const event = events.find(e => e.id === id)
+            if (!event) return
+
+            document.getElementById('modal-image').style.backgroundImage = `url('${event.image}')`
+            document.getElementById('modal-title').innerHTML = event.title
+            document.getElementById('modal-date').innerHTML = `${event.date} • ${event.venue}`
+            document.getElementById('modal-tickets-sold').innerHTML = event.ticketsSold
+            document.getElementById('modal-capacity').innerHTML = `of ${event.capacity}`
+            document.getElementById('modal-revenue').innerHTML = `€${event.revenue.toLocaleString('de-DE')}`
+
+            const statusEl = document.getElementById('modal-status')
+            statusEl.innerHTML = event.status === 'live' ?
+                `<span class="text-emerald-400"><i class="fa-solid fa-circle"></i> LIVE</span>` :
+                event.status.toUpperCase()
+
+            document.getElementById('event-modal').classList.remove('hidden')
+            document.getElementById('event-modal').classList.add('flex')
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('event-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+
+        function bookTicketsFromModal() {
+            closeModal()
+            showToast("Ticket purchase flow opened (demo)")
+            setTimeout(() => {
+                navigateTo('tickets')
+            }, 1200)
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast')
+            document.getElementById('toast-text').innerText = message
+            toast.classList.remove('hidden')
+            toast.style.transform = 'translateY(30px)'
+            toast.style.opacity = '0'
+
+            // trigger animation
+            setTimeout(() => {
+                toast.style.transitionDuration = '300ms'
+                toast.style.transform = 'translateY(0)'
+                toast.style.opacity = '1'
+            }, 10)
+
+            setTimeout(() => {
+                toast.style.transitionDuration = '400ms'
+                toast.style.opacity = '0'
+                toast.style.transform = 'translateY(20px)'
+
+                setTimeout(() => {
+                    toast.classList.add('hidden')
+                }, 400)
+            }, 2800)
+        }
+
+        function createNewEvent() {
+            showToast("New event wizard opened")
+
+            // simulate adding a new event
+            setTimeout(() => {
+                const newEvent = {
+                    id: events.length,
+                    title: "New Event " + (new Date().getFullYear()),
+                    date: "Apr 12, 2025",
+                    venue: "Unknown Venue",
+                    image: "https://picsum.photos/id/160/600/400",
+                    status: "upcoming",
+                    ticketsSold: 12,
+                    capacity: 800,
+                    price: 55,
+                    revenue: 660
+                }
+                events.unshift(newEvent)
+
+                if (!document.getElementById('dashboard-view').classList.contains('hidden')) {
+                    renderDashboardEvents()
+                } else if (!document.getElementById('events-view').classList.contains('hidden')) {
+                    renderAllEvents('all')
+                }
+
+                showToast("New event added to database")
+            }, 600)
+        }
+
+        function refundTicket(id) {
+            event.stopImmediatePropagation()
+            if (confirm("Refund this ticket?")) {
+                tickets = tickets.filter(t => t.id !== id)
+                renderTicketsTable()
+                showToast("Ticket refunded")
+            }
+        }
+
+        function viewAllTickets() {
+            navigateTo('tickets')
+        }
+
+        function searchEvents() {
+            const term = document.getElementById('search-input').value.toLowerCase().trim()
+            if (!term) {
+                if (currentView === 'events') renderAllEvents('all')
+                return
+            }
+
+            const filtered = events.filter(ev =>
+                ev.title.toLowerCase().includes(term) ||
+                ev.venue.toLowerCase().includes(term)
+            )
+
+            if (currentView === 'events') {
+                const container = document.getElementById('all-events-grid')
+                container.innerHTML = ''
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `<div class="col-span-full py-20 text-center">No results for <span class="font-medium">'${term}'</span></div>`
+                    return
+                }
+
+                filtered.forEach(event => {
+                    const percent = Math.round((event.ticketsSold / event.capacity) * 100)
+                    const cardHTML = `
+                    <div onclick="viewEventDetail(${event.id});" 
+                         class="event-card bg-zinc-900 rounded-3xl overflow-hidden cursor-pointer">
+                        <img src="${event.image}" class="h-56 w-full object-cover">
+                        <div class="px-6 py-6">
+                            <div class="flex justify-between">
+                                <div class="font-medium">${event.title}</div>
+                            </div>
+                            <div class="text-xs text-zinc-400 mt-1">${event.date}</div>
+                            <div class="mt-8 text-xs flex justify-between items-end">
+                                <div class="font-mono">${event.ticketsSold}<span class="text-zinc-400">/${event.capacity}</span></div>
+                                <div class="font-medium text-amber-400">${percent}% SOLD</div>
+                            </div>
+                        </div>
+                    </div>`
+                    container.innerHTML += cardHTML
+                })
+            } else {
+                showToast(`Found ${filtered.length} events for "${term}"`)
+                navigateTo('events')
+            }
+        }
+
+        function fakeRefreshChart() {
+            showToast("Chart data refreshed")
+        }
+
+        function exportDatabase() {
+            showToast("Database exported as CSV")
+        }
+
+        function toggleSidebar() {
+            showToast("Sidebar would collapse on mobile")
+        }
+
+        function showHelp() {
+            showToast("Need help? Our team is a click away.")
+        }
+
+        // Keyboard shortcuts
+        function handleKeys(e) {
+            if (e.metaKey && e.key === "k") {
+                e.preventDefault()
+                const search = document.getElementById('search-input')
+                search.focus()
+            }
+        }
+
+        // Initialize everything
+        function initializeApp() {
+            initializeTailwind()
+
+            // Render initial dashboard events
+            renderDashboardEvents()
+
+            // Render initial tickets
+            renderTicketsTable()
+
+            // Render database on load
+            renderDatabaseTable()
+
+            // Make the first filter active
+            const firstFilter = document.querySelector('#events-view [data-filter="all"]')
+            if (firstFilter) firstFilter.classList.add('bg-zinc-800', 'text-white')
+
+            // Randomly update total tickets every 8 seconds
+            setInterval(() => {
+                const totalTicketsEl = document.getElementById('total-tickets-sold')
+                if (totalTicketsEl) {
+                    let num = parseInt(totalTicketsEl.innerText.replace(',', ''))
+                    num += Math.floor(Math.random() * 7) + 3
+                    totalTicketsEl.innerText = num.toLocaleString('en-US')
+                }
+            }, 8000)
+
+            // Keyboard listener
+            document.addEventListener('keydown', handleKeys)
+
+            // Demo toast on load
+            setTimeout(() => {
+                showToast("Connected to 4 live events")
+            }, 2100)
+
+            // Make sure search input works on enter
+            const searchInput = document.getElementById('search-input')
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === "Enter") {
+                    searchEvents()
+                }
+            })
+
+            // Make the page feel alive
+            console.log('%cLumina Event Platform ready 🚀', 'color:#facc15; font-family:monospace')
+        }
+
+        // Boot app
+        window.onload = initializeApp
+    </script>
+</body>
+
+</html>
